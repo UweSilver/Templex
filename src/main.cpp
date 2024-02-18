@@ -7,10 +7,12 @@
 #include <functional>
 #include <string_view>
 
-template <typename Key, typename Value, size_t Size>
+template <size_t Size>
 class cexpr_map
 {
 public:
+    using Key = std::string_view;
+    using Value = int;
     static_assert(std::is_invocable_v<std::less<>, Key, Key>, "Key must be < comparable");
     using value_type = std::pair<Key, Value>;
     using container_type = std::array<value_type, Size>;
@@ -95,10 +97,10 @@ public:
     }
 };
 
-template <typename Key, typename Value, size_t N>
-constexpr auto make_map(const std::pair<Key, Value> (&arr)[N])
+template <size_t N>
+constexpr auto make_map(const std::pair<std::string_view, int> (&arr)[N])
 {
-    cexpr_map<Key, Value, N> result{arr, std::make_index_sequence<N>{}};
+    cexpr_map<N> result{arr, std::make_index_sequence<N>{}};
     return result;
 }
 
@@ -159,12 +161,6 @@ public:
     char name[size];
 };
 
-template <auto var>
-struct test
-{
-    static constexpr auto name = var.name;
-};
-
 template <size_t N>
 constexpr auto make_env(const std::pair<std::string_view, int> (&arr)[N])
 {
@@ -172,12 +168,12 @@ constexpr auto make_env(const std::pair<std::string_view, int> (&arr)[N])
 }
 
 template <size_t N, size_t M>
-constexpr auto concat_env(const cexpr_map<std::string_view, int, N> n, const cexpr_map<std::string_view, int, M> m)
+constexpr auto concat_env(const cexpr_map<N> n, const cexpr_map<M> m)
 {
     std::array<std::pair<std::string_view, int>, N + M> result;
     std::copy(n.begin(), n.end(), result.begin());
     std::copy(m.begin(), m.end(), result.begin() + N);
-    cexpr_map<std::string_view, int, N + M> new_env(result);
+    cexpr_map<N + M> new_env(result);
     return new_env;
 }
 
