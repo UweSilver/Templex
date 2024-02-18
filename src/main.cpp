@@ -105,7 +105,7 @@ constexpr auto make_map(const std::pair<Key, Value> (&arr)[N])
 template <typename T>
 concept Exp = requires {
     {
-        T::value
+        T::value()
     } -> std::convertible_to<int>;
 };
 
@@ -113,77 +113,34 @@ template <int N>
 struct Num
 {
 public:
-    static constexpr int value = N;
+    static constexpr int value() { return N; }
 };
 
 template <Exp lhs, Exp rhs>
 struct Add
 {
 public:
-    static constexpr int value = lhs::value + rhs::value;
+    static constexpr int value() { return lhs::value() + rhs::value(); }
 };
 
 template <Exp lhs, Exp rhs>
 struct Sub
 {
 public:
-    static constexpr int value = lhs::value - rhs::value;
+    static constexpr int value() { return lhs::value() - rhs::value(); }
 };
 
-template <Exp lhs, Exp rhs>
-struct Mul
+template <Exp ex0, Exp ex1>
+struct Couple
 {
 public:
-    static constexpr int value = lhs::value * rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct Div
-{
-public:
-    static constexpr int value = lhs::value / rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct Great
-{
-public:
-    static constexpr int value = lhs::value > rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct Less
-{
-public:
-    static constexpr int value = lhs::value < rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct Equal
-{
-public:
-    static constexpr int value = lhs::value == rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct NotEqual
-{
-public:
-    static constexpr int value = lhs::value != rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct GreatEqual
-{
-public:
-    static constexpr int value = lhs::value >= rhs::value;
-};
-
-template <Exp lhs, Exp rhs>
-struct LessEqual
-{
-public:
-    static constexpr int value = lhs::value <= rhs::value;
+    static constexpr int value()
+    {
+        constexpr auto a = ex0::value();
+        constexpr auto b = ex1::value();
+        constexpr auto c = a + b;
+        return b;
+    };
 };
 
 template <int size>
@@ -227,9 +184,7 @@ constexpr auto concat_env(const cexpr_map<std::string_view, int, N> n, const cex
 int main()
 {
     std::cout << "hello, world" << std::endl;
-    std::cout << Equal<Num<3>, Num<2>>::value << std::endl;
-    std::cout << Equal<Num<3>, Num<3>>::value << std::endl;
-
+    std::cout << Add<Couple<Num<3>, Num<2>>, Num<-5>>::value() << std::endl;
     constexpr auto m = make_env({{"stuff", 100},
                                  {"k0", 0}});
 
